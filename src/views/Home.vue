@@ -1,54 +1,62 @@
 <template>
   <div class="home">
-    <div>{{ queryParamsObject }}</div>
-    <!-- <div>{{ setUpCall() }}</div> -->
-    <div>{{ nomicsData }}</div>
-    <button v-on:click="spitKey()">spit</button>
-    <button v-on:click="nomicsGet()">Get Data</button>
-    <button v-on:click="nomicsGetWithService()">Get Data with service</button>
+    <button v-on:click="coinGeckoGetPrice(getCryptoData)">Get Data</button>
 
-    <!-- <img alt="Vue logo" src="../assets/logo.png" /> -->
+    <div>
+      <div>
+        <label for="oldDate">Historical Date</label>
+
+        <input v-model="getCryptoData.historicalDate" type="text" id="oldDate" />
+      </div>
+      <select v-model="selectedCrypto">
+        <option v-bind:value="crypto" v-for="crypto in cryptos" v-bind:key="crypto.id">
+          {{ crypto.name }}
+        </option>
+      </select>
+    </div>
   </div>
 </template>
 
 <script>
 import HttpService from "@/services/HttpService.vue";
 
-import axios from "axios";
 export default {
   data: function () {
     return {
-      queryParamsObject: {
-        key: process.env.VUE_APP_NOMICS_KEY,
-        start: "2018-04-14T00:00:00Z",
-        ids: "BTC",
-        end: "2018-04-14T00:00:00Z",
-      },
-      nomicsData: {},
+      cryptoData: {},
       key: "",
+      cryptos: [
+        { id: 1, name: "Bitcoin", ticker: "BTC" },
+        { id: 2, name: "Litecoin", ticker: "LTC" },
+        { id: 3, name: "Ethereum", ticker: "ETC" },
+        { id: 4, name: "Bitcoin Cash", ticker: "BCH" },
+        { id: 5, name: "Dogecoin", ticker: "DOGE" },
+        { id: 6, name: "Ethereum Classic", ticker: "ETC" },
+      ],
+      selectedCrypto: {},
+      getCryptoData: { crypto: {}, historicalDate: "01-01-2017", currentDate: "10-06-2021" },
+      showData: false,
     };
   },
-  methods: {
-    nomicsGetWithService: function () {
-      HttpService.get(
-        `https://api.nomics.com/v1/currencies/sparkline`,
-        {
-          params: this.queryParamsObject,
-        },
-        (status, data) => console.log(status, data)
-      );
+  watch: {
+    selectedCrypto: function (val) {
+      this.getCryptoData.crypto = val;
     },
-    nomicsGet: function () {
-      axios
-        .get(`https://api.nomics.com/v1/currencies/sparkline`, {
-          params: this.queryParamsObject,
-        })
-        .then((response) => {
-          this.nomicsData = response.data;
-          console.log(this.nomicsData);
-        })
-        // .then(console.log(this.nomicsData))
-        .catch((error) => console.log(error));
+  },
+  methods: {
+    coinGeckoGetPrice: function (getCryptoData) {
+      HttpService.get(
+        `https://api.coingecko.com/api/v3/coins/${getCryptoData.crypto.name.toLowerCase()}/history`,
+        {
+          params: { date: getCryptoData.historicalDate, localization: false },
+        },
+        (status, data) => {
+          this.cryptoData.history = data;
+          console.log(this.cryptoData.history);
+          this.showData = true;
+          console.log(status, data);
+        }
+      );
     },
   },
 };
