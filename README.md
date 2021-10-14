@@ -1,4 +1,4 @@
-# crypto-dreams
+# componenet-practice
 
 ## Project setup
 ```
