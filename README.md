@@ -1,4 +1,4 @@
-# componenet-practice
+# component-practice
 
 ## Project setup
 ```
